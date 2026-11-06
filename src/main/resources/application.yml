@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: moa
+  datasource:
+    url: jdbc:h2:mem:moa;MODE=MySQL
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    # @Transactional? ?? ??? ???? ??? ?? ??? ????? ?? ???? ?? ??
+    open-in-view: false # OSIV ?? ??
+
+  h2:
+    console:
+      enabled: true
