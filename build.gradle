@@ -22,6 +22,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // 웹 서버(Tomcat)
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
     // jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
@@ -29,9 +32,22 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-h2console' // H2 콘솔
 
-    // 웹 서버(Tomcat)
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    // security + validation
+    // 필터 체인, 인가 규칙, BCrypt
+    // 요청 DTO 검증 (@Valid, @NotBlank 등)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // JWT
+    // 토큰 생성·서명·파싱. impl·jackson은 실행 시에만 필요해서 runtimeOnly
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+
+    // lombok
+    // @RequiredArgsConstructor, @Getter, @Slf4j
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

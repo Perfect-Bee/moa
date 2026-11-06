@@ -37,4 +37,7 @@ out/
 .vscode/
 
 ### 개인정보 ###
+# local
+application-local.yml
+# docker-compose
 .env
