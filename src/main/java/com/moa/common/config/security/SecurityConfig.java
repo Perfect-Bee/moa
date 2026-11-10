@@ -37,6 +37,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // 에러 응답 경로 (없으면 permitAll 경로의 404·500도 401로 바뀜)
+                        .requestMatchers("/error").permitAll()
                         // 인증
                         .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
                         // 개발 도구
