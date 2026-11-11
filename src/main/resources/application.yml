@@ -12,8 +12,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    # @Transactional? ?? ??? ???? ??? ?? ??? ????? ?? ???? ?? ??
-    open-in-view: false # OSIV ?? ??
+    # @Transactional이 끝난 뒤에도 영속성 컨텍스트를 뷰까지 유지하지 않도록 끔 (DB 커넥션 조기 반환)
+    open-in-view: false # OSIV 비활성화
 
   h2:
     console:
@@ -25,4 +25,4 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-expiration: 3600000   # 1?? (ms)
+  access-expiration: 3600000   # 1시간 (ms)
