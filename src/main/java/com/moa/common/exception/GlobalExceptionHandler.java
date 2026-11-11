@@ -9,6 +9,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
@@ -48,6 +49,16 @@ public class GlobalExceptionHandler {
         log.warn("요청 본문 파싱 실패 : {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(BaseResponse.fail(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다"));
+    }
+
+    // 쿼리 파라미터·경로 변수 타입 불일치
+    // 예: ?groupBuyStatus=abc (enum에 없는 값), ?page=abc, /api/v1/products/abc
+    // 이 핸들러가 없으면 아래 Exception 핸들러로 떨어져 500이 됨
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<BaseResponse<Void>> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        log.warn("요청 파라미터 타입 불일치 : {} = {}", e.getName(), e.getValue());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponse.fail(HttpStatus.BAD_REQUEST, "잘못된 요청 값입니다: " + e.getName()));
     }
 
     // 존재하지 않는 경로
