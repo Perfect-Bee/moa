@@ -1,6 +1,8 @@
 package com.moa.domain.groupbuy.entity;
 
+import com.moa.common.exception.BusinessException;
 import com.moa.domain.groupbuy.enums.GroupBuyStatus;
+import com.moa.domain.groupbuy.exception.GroupBuyErrorCode;
 import com.moa.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -71,8 +73,39 @@ public class GroupBuy {
     }
 
     // 입력값 검증(target <= max, endAt > startAt 등)은 공동구매 개설 API를 만들 때 추가
+    // now를 밖에서 받는 이유: 한 요청 안에서 시간 기준을 하나로 맞추고, 테스트에서 시각을 고정할 수 있게
     public static GroupBuy create(Product product, int wholesalePrice, int targetQuantity, int maxQuantity,
-                                  LocalDateTime startAt, LocalDateTime endAt) {
-        return new GroupBuy(product, wholesalePrice, targetQuantity, maxQuantity, startAt, endAt);
+                                  LocalDateTime startAt, LocalDateTime endAt, LocalDateTime now) {
+        // 목표 수량은 최대 수량 이하
+        if (targetQuantity > maxQuantity) {
+            throw new BusinessException(GroupBuyErrorCode.INVALID_QUANTITY);
+        }
+
+        // startAt은 생략 가능 → 현재 시각. 요청으로 받으면 현재 이후인지 확인
+        LocalDateTime start = (startAt == null) ? now : startAt;
+        if (start.isBefore(now) || !endAt.isAfter(start)) {
+            throw new BusinessException(GroupBuyErrorCode.INVALID_PERIOD);
+        }
+
+        // 도매가 < 정가 검증 (현재 미사용. 쓸 때 에러 코드 INVALID_WHOLESALE_PRICE 추가 후 주석 해제)
+        // if (wholesalePrice >= product.getListPrice()) {
+        //     throw new BusinessException(GroupBuyErrorCode.INVALID_WHOLESALE_PRICE);
+        // }
+
+        return new GroupBuy(product, wholesalePrice, targetQuantity, maxQuantity, start, endAt);
+    }
+
+    // 남은 수량 (최대 수량 기준)
+    public int getRemainingQuantity() {
+        return maxQuantity - currentQuantity;
+    }
+
+    // 진행률: 목표 달성이면 100, 아니면 소수 첫째 자리까지
+    public double getProgressRate() {
+        if (currentQuantity >= targetQuantity) {
+            return 100.0;
+        }
+        return Math.round(currentQuantity * 1000.0 / targetQuantity) / 10.0;
     }
 }
+

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // 목록 조회 groupBuyStatus 필터: 해당 상태의 공동구매가 하나라도 있는 상품
@@ -36,4 +38,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             """,
            nativeQuery = true)
     Page<Product> findAllByGroupBuyStatus(@Param("status") String status, Pageable pageable);
+
+    // 공동구매 개설: 상품 행을 잠가서 동시 개설 요청을 줄 세움 (트랜잭션 안에서만 의미 있음)
+    @Query(value =
+            "SELECT * " +
+            "FROM products " +
+            "WHERE id = :id FOR UPDATE",
+            nativeQuery = true)
+    Optional<Product> findByIdForUpdate(@Param("id") Long id);
 }
