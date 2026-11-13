@@ -1,0 +1,14 @@
+services:
+  redis:
+    image: redis:${REDIS_VERSION}            # .env의 REDIS_VERSION
+    container_name: moa-redis                # docker exec 할 때 쓰는 이름
+    ports:
+      - "${REDIS_PORT}:6379"                 # 내 PC 포트 : 컨테이너 포트
+    command: redis-server --appendonly yes   # AOF: 재시작해도 데이터 유지
+    volumes:
+      - redis-data:/data                     # AOF 파일 저장 위치
+      -
+    # restart: unless-stopped                  # Docker Desktop 재시작 시 자동 실행
+
+volumes:
+  redis-data:                                # 위에서 쓴 볼륨 선언

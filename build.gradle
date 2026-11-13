@@ -32,6 +32,9 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-h2console' // H2 콘솔
 
+    // Redis: 참여 수량 선점(Lua), 추후 분산락
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     // security + validation
     // 필터 체인, 인가 규칙, BCrypt
     // 요청 DTO 검증 (@Valid, @NotBlank 등)
