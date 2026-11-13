@@ -1,9 +1,15 @@
 package com.moa.domain.groupbuy.service;
 
 
+import com.moa.common.exception.BusinessException;
+import com.moa.domain.groupbuy.exception.GroupBuyErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 // 공동구매 참여 수량을 Redis에서 관리 (선점용 입구 컷)
 // 최종 기준(Source of Truth)은 DB의 currentQuantity, Redis는 동시 참여를 빠르게 거르는 용도
@@ -11,6 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class GroupBuyQuantityService {
+
+    // 스크립트는 한 번만 읽어서 재사용. 반환값은 Lua의 정수 → Long
+    private static final RedisScript<Long> RESERVE_SCRIPT =
+            RedisScript.of(new ClassPathResource("scripts/reserve_quantity.lua"), Long.class);
 
     private final StringRedisTemplate redisTemplate;
 
@@ -21,7 +31,24 @@ public class GroupBuyQuantityService {
         redisTemplate.opsForValue().set(maxKey(groupBuyId), String.valueOf(maxQuantity));
     }
 
-    // reserve(Lua 선점), release(반납)는 주문 단계에서 추가
+    // 수량 선점: "count + quantity <= max"면 증가, 아니면 예외 (Lua로 원자적 실행)
+    public void reserve(Long groupBuyId, int quantity) {
+        Long result = redisTemplate.execute(RESERVE_SCRIPT,
+                List.of(countKey(groupBuyId), maxKey(groupBuyId)),
+                String.valueOf(quantity));
+
+        if (result == null || result == -2L) {
+            throw new BusinessException(GroupBuyErrorCode.QUANTITY_NOT_READY);
+        }
+        if (result == -1L) {
+            throw new BusinessException(GroupBuyErrorCode.EXCEEDS_REMAINING_QUANTITY);
+        }
+    }
+
+    // 선점 반납: 결제 실패·DB 반영 실패(보상 처리), 주문 취소 시
+    public void release(Long groupBuyId, int quantity) {
+        redisTemplate.opsForValue().decrement(countKey(groupBuyId), quantity);
+    }
 
     // 선점된 참여 수량
     private String countKey(Long groupBuyId) {
