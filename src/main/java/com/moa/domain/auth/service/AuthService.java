@@ -6,6 +6,8 @@ import com.moa.domain.auth.dto.LoginRequest;
 import com.moa.domain.auth.dto.LoginResponse;
 import com.moa.domain.auth.dto.SignupRequest;
 import com.moa.domain.auth.dto.SignupResponse;
+import com.moa.domain.cart.entity.Cart;
+import com.moa.domain.cart.repository.CartRepository;
 import com.moa.domain.user.entity.User;
 import com.moa.domain.user.exception.UserErrorCode;
 import com.moa.domain.user.repository.UserRepository;
@@ -22,6 +24,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // SecurityConfig에 등록한 BCryptPasswordEncoder
     private final JwtUtil jwtUtil;
+    private final CartRepository cartRepository;
 
     // 회원가입
     @Transactional
@@ -36,7 +39,10 @@ public class AuthService {
         User user = User.create(request.email(), encodedPassword, request.nickname(), request.role());
         User savedUser = userRepository.save(user);
 
-        // 3. 응답 변환 (password 제외)
+        // 3. 장바구니 생성 (같은 트랜잭션 → 하나라도 실패하면 둘 다 롤백)
+        cartRepository.save(Cart.create(savedUser));
+
+        // 4. 응답 변환 (password 제외)
         return SignupResponse.from(savedUser);
     }
 

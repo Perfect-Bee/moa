@@ -1,0 +1,18 @@
+package com.moa.domain.cart.repository;
+
+import com.moa.domain.cart.entity.CartItem;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface CartItemRepository extends JpaRepository<CartItem, Long> {
+
+    // 담기: 이미 담긴 공동구매인지 (있으면 수량 합산)
+    Optional<CartItem> findByCartIdAndGroupBuyId(Long cartId, Long groupBuyId);
+
+    // 조회: 공동구매·상품까지 한 번에 가져와 N+1 방지 (JPQL 없이 @EntityGraph로 fetch join)
+    @EntityGraph(attributePaths = {"groupBuy", "groupBuy.product"})
+    List<CartItem> findAllByCartIdOrderByIdAsc(Long cartId);
+}

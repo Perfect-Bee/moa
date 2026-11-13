@@ -15,6 +15,10 @@ public enum GroupBuyErrorCode implements ErrorCode {
     INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "목표 수량은 최대 수량보다 클 수 없습니다"),
     INVALID_PERIOD(HttpStatus.BAD_REQUEST, "시작 시각은 현재 이후, 마감 시각은 시작 시각 이후여야 합니다"),
 
+    // 참여 (장바구니 담기·주문)
+    GROUP_BUY_NOT_OPEN(HttpStatus.CONFLICT, "참여할 수 없는 공동구매입니다 (시작 전 또는 마감)"),
+    EXCEEDS_REMAINING_QUANTITY(HttpStatus.CONFLICT, "남은 수량을 초과했습니다"),
+
     // 조회
     GROUP_BUY_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다");
 

@@ -90,6 +90,14 @@ public class GroupBuy {
         return new GroupBuy(product, wholesalePrice, targetQuantity, maxQuantity, start, endAt);
     }
 
+    // 참여 가능 여부: OPEN이고, 시작 시각이 지났고, 마감 전
+    // CLOSED(최대 수량 도달)·SUCCEEDED·FAILED는 참여 불가
+    public boolean isOrderable(LocalDateTime now) {
+        return status == GroupBuyStatus.OPEN
+                && !now.isBefore(startAt)
+                && now.isBefore(endAt);
+    }
+
     // 남은 수량 (최대 수량 기준)
     public int getRemainingQuantity() {
         return maxQuantity - currentQuantity;
