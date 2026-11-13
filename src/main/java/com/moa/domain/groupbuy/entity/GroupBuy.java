@@ -55,11 +55,6 @@ public class GroupBuy {
     @Column(nullable = false)
     private LocalDateTime endAt;
 
-    // 낙관적 락용 버전 (ERD 기준으로 추가)
-    // 벌크 UPDATE로 수량을 바꾸면 자동 증가하지 않으므로 주문 단계에서 유지 여부 결정
-    @Version
-    private Long version;
-
     private GroupBuy(Product product, int wholesalePrice, int targetQuantity, int maxQuantity,
                      LocalDateTime startAt, LocalDateTime endAt) {
         this.product = product;
