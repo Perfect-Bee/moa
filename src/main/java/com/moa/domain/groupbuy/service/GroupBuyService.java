@@ -14,6 +14,8 @@ import com.moa.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +30,8 @@ public class GroupBuyService {
 
     private final ProductRepository productRepository;
     private final GroupBuyRepository groupBuyRepository;
+    private final GroupBuyQuantityService groupBuyQuantityService;
+
 
     // 공동구매 개설
     @Transactional
@@ -51,7 +55,16 @@ public class GroupBuyService {
                 product, request.wholesalePrice(), request.targetQuantity(), request.maxQuantity(),
                 request.startAt(), request.endAt(), LocalDateTime.now()));
 
-        // Redis 초기화(afterCommit)와 분산락은 11/13 Redis 세팅 때 추가
+        // 5. 커밋 후 Redis 수량 초기화
+        // 트랜잭션 안에서 넣으면 DB가 롤백돼도 Redis에 키가 남으므로, 커밋 성공 후에만 실행
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                groupBuyQuantityService.init(groupBuy.getId(), groupBuy.getMaxQuantity());
+            }
+        });
+
+        // 분산락(@RedissonLock) 추후 적용 예정
         return GroupBuyCreateResponse.from(groupBuy);
     }
 
