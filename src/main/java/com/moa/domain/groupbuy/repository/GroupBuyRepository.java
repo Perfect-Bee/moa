@@ -44,4 +44,19 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     int increaseQuantity(@Param("id") Long id,
                          @Param("quantity") int quantity,
                          @Param("now") LocalDateTime now);
+
+    // 주문 취소: 참여 수량 감소 (OPEN이고 마감 전일 때만). 영향 행 0 → 호출한 쪽에서 409
+    // CLOSED에선 구매 취소가 안 되므로 OPEN 복구 처리는 없음
+    @Modifying
+    @Query(value = """
+            UPDATE group_buys
+            SET current_quantity = current_quantity - :quantity
+            WHERE id = :id
+              AND status = 'OPEN'
+              AND end_at > :now
+              AND current_quantity >= :quantity
+            """, nativeQuery = true)
+    int decreaseQuantity(@Param("id") Long id,
+                         @Param("quantity") int quantity,
+                         @Param("now") LocalDateTime now);
 }

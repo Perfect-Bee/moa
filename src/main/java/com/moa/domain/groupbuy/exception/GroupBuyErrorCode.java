@@ -15,6 +15,9 @@ public enum GroupBuyErrorCode implements ErrorCode {
     INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "목표 수량은 최대 수량보다 클 수 없습니다"),
     INVALID_PERIOD(HttpStatus.BAD_REQUEST, "시작 시각은 현재 이후, 마감 시각은 시작 시각 이후여야 합니다"),
 
+    // 주문 취소: 조기 마감(CLOSED) 또는 기간 종료(endAt 경과, SUCCEEDED, FAILED)
+    GROUP_BUY_CLOSED(HttpStatus.CONFLICT, "마감된 공동구매는 취소할 수 없습니다"),
+
     // 참여 (장바구니 담기·주문)
     GROUP_BUY_NOT_OPEN(HttpStatus.CONFLICT, "참여할 수 없는 공동구매입니다 (시작 전 또는 마감)"),
     EXCEEDS_REMAINING_QUANTITY(HttpStatus.CONFLICT, "남은 수량을 초과했습니다"),

@@ -49,6 +49,16 @@ public class Payment {
         this.paidAt = paidAt;
     }
 
+    // 환불 (주문 취소, 공동구매 실패)
+    // 이미 환불됐으면 그대로 (중복 환불 방지 -> 스케줄러에서도 재사용)
+    public void refund(LocalDateTime now) {
+        if (status == PaymentStatus.REFUNDED) {
+            return;
+        }
+        this.status = PaymentStatus.REFUNDED;
+        this.refundedAt = now;
+    }
+
     public static Payment complete(Order order, String paymentKey, long amount, LocalDateTime paidAt) {
         return new Payment(order, paymentKey, amount, paidAt);
     }

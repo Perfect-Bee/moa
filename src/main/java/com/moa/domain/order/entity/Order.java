@@ -1,7 +1,9 @@
 package com.moa.domain.order.entity;
 
+import com.moa.common.exception.BusinessException;
 import com.moa.domain.groupbuy.entity.GroupBuy;
 import com.moa.domain.order.enums.OrderStatus;
+import com.moa.domain.order.exception.OrderErrorCode;
 import com.moa.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -63,6 +65,20 @@ public class Order {
         this.unitPrice = groupBuy.getWholesalePrice();
         this.totalPrice = (long) unitPrice * quantity;
         this.status = OrderStatus.PAID; // 결제 성공 후 생성
+    }
+
+    // 본인 주문인지 (user는 LAZY 프록시 -> getId()는 추가 쿼리 없음)
+    public boolean isOwnedBy(Long userId) {
+        return user.getId().equals(userId);
+    }
+
+    // 사용자 취소: PAID만 가능
+    // 공동구매가 OPEN인지는 DB 조건부 UPDATE가 판단 (동시성 때문에 엔티티 값으로 판단하지 않음)
+    public void cancel() {
+        if (status != OrderStatus.PAID) {
+            throw new BusinessException(OrderErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.CANCELED;
     }
 
     public static Order create(User user, GroupBuy groupBuy, int quantity, LocalDateTime now) {
