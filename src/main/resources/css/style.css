@@ -1,1 +1,40 @@
-/* 사이트 전체 공통 레이아웃 및 기본 UI 디자인 스타일 정의 */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, "Malgun Gothic", sans-serif; background: #f3f4f6; color: #1f2937; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #1f2937; color: #fff; }
+header h1 { margin: 0; font-size: 20px; }
+nav { display: flex; gap: 4px; padding: 12px 20px 0; }
+nav button { background: #e5e7eb; color: #374151; border-radius: 8px 8px 0 0; }
+nav button.active { background: #fff; font-weight: 700; }
+.layout { display: grid; grid-template-columns: 1fr 420px; gap: 16px; padding: 0 20px 20px; }
+
+.tab { display: none; }
+.tab.active { display: block; }
+.card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.card h2 { margin: 0 0 12px; font-size: 16px; }
+
+form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+input, select { padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+input.qty { width: 64px; }
+button { padding: 6px 12px; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
+button.small { padding: 4px 8px; font-size: 12px; }
+button.secondary { background: #6b7280; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 6px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+td.actions { display: flex; gap: 4px; align-items: center; }
+.hint { color: #6b7280; font-size: 12px; }
+.pager { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+pre { white-space: pre-wrap; }
+
+.bar { height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
+.bar div { height: 100%; background: #16a34a; }
+.badge { padding: 2px 6px; border-radius: 4px; font-size: 12px; background: #e5e7eb; }
+.badge.PAID { background: #dbeafe; }
+.badge.CANCELED { background: #fee2e2; }
+.badge.CONFIRMED { background: #dcfce7; }
+.badge.REFUNDED { background: #fef3c7; }
+
+aside { background: #111827; color: #e5e7eb; border-radius: 8px; padding: 12px; height: calc(100vh - 120px); overflow-y: auto; position: sticky; top: 12px; }
+aside h2 { font-size: 14px; margin: 0 0 8px; }
+.log-entry { white-space: pre-wrap; font: 12px/1.4 Consolas, monospace; padding: 8px; margin-bottom: 8px; border-left: 3px solid #16a34a; background: #1f2937; }
+.log-entry.fail { border-left-color: #dc2626; }

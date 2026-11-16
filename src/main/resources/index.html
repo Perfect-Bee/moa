@@ -1,1 +1,169 @@
-<!-- ... -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>MOA 공동구매 (테스트 화면)</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1>MOA 공동구매</h1>
+    <span id="current-user">로그인 안 됨</span>
+</header>
+
+<nav id="tabs">
+    <button data-tab="auth" class="active">계정</button>
+    <button data-tab="product">상품·공동구매</button>
+    <button data-tab="cart">장바구니</button>
+    <button data-tab="order">주문</button>
+    <button data-tab="live">실시간 (예정)</button>
+</nav>
+
+<div class="layout">
+<main>
+    <!-- 계정 -->
+    <section id="tab-auth" class="tab active">
+        <div class="card">
+            <h2>회원가입</h2>
+            <form id="signup-form">
+                <input name="email" type="email" placeholder="이메일" required>
+                <input name="password" type="password" placeholder="비밀번호 (영문·숫자·특수문자 8~20자)" required>
+                <input name="nickname" placeholder="닉네임" required>
+                <select name="role">
+                    <option value="USER">구매자 (USER)</option>
+                    <option value="SELLER">판매자 (SELLER)</option>
+                </select>
+                <button type="submit">가입</button>
+            </form>
+        </div>
+        <div class="card">
+            <h2>로그인</h2>
+            <form id="login-form">
+                <input name="email" type="email" placeholder="이메일" required>
+                <input name="password" type="password" placeholder="비밀번호" required>
+                <button type="submit">로그인</button>
+            </form>
+        </div>
+        <div class="card">
+            <h2>로그인한 계정 (누르면 전환)</h2>
+            <ul id="account-list"></ul>
+            <button id="clear-accounts" class="secondary">저장된 토큰 모두 지우기</button>
+            <p class="hint">서버를 재시작하면 H2 데이터가 사라져요. 토큰을 지우고 다시 가입·로그인하세요.</p>
+        </div>
+    </section>
+
+    <!-- 상품·공동구매 -->
+    <section id="tab-product" class="tab">
+        <div class="card">
+            <h2>상품 등록 (판매자)</h2>
+            <form id="product-form">
+                <input name="name" placeholder="상품명" required>
+                <input name="description" placeholder="설명">
+                <input name="listPrice" type="number" min="1" placeholder="정가" required>
+                <input name="imageUrl" placeholder="이미지 URL (선택)">
+                <button type="submit">등록</button>
+            </form>
+        </div>
+        <div class="card">
+            <h2>공동구매 개설 (판매자)</h2>
+            <form id="groupbuy-form">
+                <input name="productId" type="number" min="1" placeholder="상품 ID" required>
+                <input name="wholesalePrice" type="number" min="1" placeholder="도매가" required>
+                <input name="targetQuantity" type="number" min="1" placeholder="목표 수량" required>
+                <input name="maxQuantity" type="number" min="1" placeholder="최대 수량" required>
+                <label>마감 <input name="endAt" type="datetime-local" required></label>
+                <button type="submit">개설</button>
+            </form>
+        </div>
+        <div class="card">
+            <h2>상품 목록 <button id="load-products" class="small" type="button">새로고침</button></h2>
+            <table>
+                <thead>
+                <tr><th>ID</th><th>상품</th><th>정가</th><th>진행 중 공동구매</th><th>수량 / 동작</th></tr>
+                </thead>
+                <tbody id="product-rows"></tbody>
+            </table>
+            <p class="hint">목록에는 OPEN 공동구매만 보여요. 조기 마감(CLOSED)은 아래에서 ID로 조회하세요.</p>
+        </div>
+        <div class="card">
+            <h2>공동구매 진행 현황</h2>
+            <form id="progress-form">
+                <input name="groupBuyId" type="number" min="1" placeholder="공동구매 ID" required>
+                <button type="submit">조회</button>
+            </form>
+            <div id="progress-view"></div>
+        </div>
+    </section>
+
+    <!-- 장바구니 -->
+    <section id="tab-cart" class="tab">
+        <div class="card">
+            <h2>내 장바구니 <button id="load-cart" class="small" type="button">새로고침</button></h2>
+            <table>
+                <thead>
+                <tr><th>선택</th><th>항목 ID</th><th>상품</th><th>도매가</th><th>수량</th><th>남은 수량</th><th>주문 가능</th><th>동작</th></tr>
+                </thead>
+                <tbody id="cart-rows"></tbody>
+            </table>
+            <p>합계(주문 가능 항목): <b id="cart-total">0원</b></p>
+            <button id="order-selected" type="button">선택 항목 주문</button>
+            <pre id="bundle-result"></pre>
+        </div>
+    </section>
+
+    <!-- 주문 -->
+    <section id="tab-order" class="tab">
+        <div class="card">
+            <h2>내 주문 목록 <button id="load-orders" class="small" type="button">새로고침</button></h2>
+            <table>
+                <thead>
+                <tr><th>주문 ID</th><th>주문번호</th><th>상태</th><th>금액</th><th>주문 시각</th><th>동작</th></tr>
+                </thead>
+                <tbody id="order-rows"></tbody>
+            </table>
+            <div class="pager">
+                <button id="prev-page" class="small" type="button">이전</button>
+                <span id="page-info"></span>
+                <button id="next-page" class="small" type="button">다음</button>
+            </div>
+        </div>
+        <div class="card">
+            <h2>주문 상세</h2>
+            <form id="order-detail-form">
+                <input name="orderId" type="number" min="1" placeholder="주문 ID" required>
+                <button type="submit">조회</button>
+            </form>
+            <div id="order-detail"></div>
+        </div>
+    </section>
+
+    <!-- 실시간: SSE·채팅 자리 -->
+    <section id="tab-live" class="tab">
+        <div class="card">
+            <h2>공동구매 실시간 진행률 (SSE)</h2>
+            <p class="hint">SSE 구현 후 연결: 공동구매 ID 구독 → 진행률·성사/실패 이벤트 표시</p>
+            <div id="sse-area"></div>
+        </div>
+        <div class="card">
+            <h2>상품 채팅방 (WebSocket)</h2>
+            <p class="hint">채팅 구현 후 연결: 채팅방 입장 → 메시지 송수신, /ai로 AI 질문</p>
+            <div id="chat-area"></div>
+        </div>
+    </section>
+</main>
+
+<!-- 요청·응답 로그 (Postman 대신 확인·캡처용) -->
+<aside>
+    <h2>요청·응답 로그 <button id="clear-log" class="small secondary" type="button">지우기</button></h2>
+    <div id="log"></div>
+</aside>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/product.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/order.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
