@@ -2,6 +2,7 @@ package com.moa.domain.groupbuy.service;
 
 import com.moa.domain.groupbuy.entity.GroupBuy;
 import com.moa.domain.groupbuy.enums.GroupBuyStatus;
+import com.moa.domain.groupbuy.event.GroupBuyChangedEvent;
 import com.moa.domain.groupbuy.repository.GroupBuyRepository;
 import com.moa.domain.order.entity.Order;
 import com.moa.domain.order.repository.OrderRepository;
@@ -10,6 +11,7 @@ import com.moa.domain.payment.entity.Payment;
 import com.moa.domain.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,9 @@ public class GroupBuyFinisher {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final MockPaymentClient paymentClient;
+
+    // 공동구매 변경 이벤트 발행 (커밋 후 리스너가 SSE로 전송)
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void finish(Long groupBuyId, LocalDateTime now) {
@@ -56,7 +61,8 @@ public class GroupBuyFinisher {
             }
         }
 
-        // SSE 연결 자리: 커밋 후 성사/실패 이벤트 전송 예정
+        // 커밋 후 SSE 성사/실패 전송
+        eventPublisher.publishEvent(new GroupBuyChangedEvent(groupBuyId));
         log.info("공동구매 마감 groupBuyId={}, result={}, orders={}",
                 groupBuyId, groupBuy.getStatus(), orders.size());
     }

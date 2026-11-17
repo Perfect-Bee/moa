@@ -3,6 +3,7 @@ package com.moa.domain.order.service;
 import com.moa.common.exception.BusinessException;
 import com.moa.domain.cart.repository.CartItemRepository;
 import com.moa.domain.groupbuy.entity.GroupBuy;
+import com.moa.domain.groupbuy.event.GroupBuyChangedEvent;
 import com.moa.domain.groupbuy.exception.GroupBuyErrorCode;
 import com.moa.domain.groupbuy.repository.GroupBuyRepository;
 import com.moa.domain.groupbuy.service.GroupBuyQuantityService;
@@ -16,6 +17,7 @@ import com.moa.domain.user.entity.User;
 import com.moa.domain.user.exception.UserErrorCode;
 import com.moa.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -39,6 +41,9 @@ public class OrderProcessor {
     private final CartItemRepository cartItemRepository;
     private final GroupBuyQuantityService groupBuyQuantityService;
     private final MockPaymentClient paymentClient;
+
+    // 공동구매 변경 이벤트 발행 (커밋 후 리스너가 SSE로 전송)
+    private final ApplicationEventPublisher eventPublisher;
 
     // cartItemId: 장바구니 주문이면 성공 시 그 항목 삭제, 단건 주문이면 null
     @Transactional
@@ -93,7 +98,8 @@ public class OrderProcessor {
             cartItemRepository.deleteById(cartItemId);
         }
 
-        // SSE 진행률 전송은 11/16 (커밋 후)
+        // 8. 커밋 후 SSE 진행률 전송 (롤백되면 나가지 않음)
+        eventPublisher.publishEvent(new GroupBuyChangedEvent(groupBuyId));
         return OrderResponse.from(order);
     }
 }

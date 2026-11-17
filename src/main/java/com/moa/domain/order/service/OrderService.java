@@ -7,6 +7,7 @@ import com.moa.domain.cart.entity.CartItem;
 import com.moa.domain.cart.exception.CartErrorCode;
 import com.moa.domain.cart.repository.CartItemRepository;
 import com.moa.domain.cart.repository.CartRepository;
+import com.moa.domain.groupbuy.event.GroupBuyChangedEvent;
 import com.moa.domain.groupbuy.exception.GroupBuyErrorCode;
 import com.moa.domain.groupbuy.repository.GroupBuyRepository;
 import com.moa.domain.groupbuy.service.GroupBuyQuantityService;
@@ -19,6 +20,7 @@ import com.moa.domain.payment.entity.Payment;
 import com.moa.domain.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,9 @@ public class OrderService {
     private final GroupBuyRepository groupBuyRepository;
     private final GroupBuyQuantityService groupBuyQuantityService;
     private final MockPaymentClient paymentClient;
+
+    // 공동구매 변경 이벤트 발행 (커밋 후 리스너가 SSE로 전송)
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final int MAX_PAGE_SIZE = 100;
 
@@ -161,6 +166,9 @@ public class OrderService {
                 }
             }
         });
+
+        // 커밋 후 SSE 진행률 전송
+        eventPublisher.publishEvent(new GroupBuyChangedEvent(groupBuyId));
 
         log.info("주문 취소 userId={}, orderId={}, groupBuyId={}, quantity={}", userId, orderId, groupBuyId, quantity);
         return OrderCancelResponse.of(order, payment);
