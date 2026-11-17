@@ -49,7 +49,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/products",
                                 "/api/v1/products/*",
-                                "/api/v1/group-buys/*",
+                                "/api/v1/group-buys/*", // 한 단계만 매칭해줌(아래 subscribe 추가).
+                                // SSE 구독 (EventSource는 헤더를 못 넣음)
+                                "/api/v1/group-buys/*/subscribe",
                                 "/api/v1/chat-rooms/*/messages"
                         ).permitAll()
                         // 판매자 전용
