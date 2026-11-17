@@ -39,8 +39,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 에러 응답 경로 (없으면 permitAll 경로의 404·500도 401로 바뀜)
                         .requestMatchers("/error").permitAll()
+                        // 테스트 화면 (static 정적 파일)
+                        .requestMatchers(HttpMethod.GET,
+                                "/", "/index.html", "/css/**", "/js/**"
+                        ).permitAll()
                         // 인증
-                        .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/signup",
+                                "/api/v1/auth/login")
+                        .permitAll()
                         // 개발 도구
                         .requestMatchers("/h2-console/**").permitAll()
                         // WebSocket 핸드셰이크 (채팅 인증은 STOMP 단계에서 별도 처리 예정)
