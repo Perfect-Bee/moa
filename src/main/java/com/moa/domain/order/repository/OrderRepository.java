@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Optional;
+import java.util.*;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
@@ -26,4 +26,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "WHERE id = :id FOR UPDATE",
             nativeQuery = true)
     Optional<Order> findByIdForUpdate(@Param("id") Long id);
+
+    // 마감 스케줄러: 이 공동구매의 참여 완료(PAID) 주문. 취소(CANCELED)된 주문은 제외
+    @Query(value = """
+            SELECT * FROM orders
+            WHERE group_buy_id = :groupBuyId
+              AND status = 'PAID'
+            """, nativeQuery = true)
+    List<Order> findPaidByGroupBuyId(@Param("groupBuyId") Long groupBuyId);
 }

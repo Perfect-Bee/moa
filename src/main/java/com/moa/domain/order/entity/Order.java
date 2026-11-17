@@ -81,6 +81,25 @@ public class Order {
         this.status = OrderStatus.CANCELED;
     }
 
+    // -------- 공동 구매 -------- //
+
+    // 공동구매 성사: PAID -> CONFIRMED
+    // 스케줄러가 PAID 주문만 조회하므로 실제로 걸릴 일은 없지만, 잘못된 전이를 막는 방어선
+    public void confirm() {
+        if (status != OrderStatus.PAID) {
+            throw new BusinessException(OrderErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.CONFIRMED;
+    }
+
+    // 공동구매 실패: PAID -> REFUNDED (사용자 취소인 CANCELED와 구분)
+    public void refund() {
+        if (status != OrderStatus.PAID) {
+            throw new BusinessException(OrderErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.REFUNDED;
+    }
+
     public static Order create(User user, GroupBuy groupBuy, int quantity, LocalDateTime now) {
         return new Order(user, groupBuy, quantity, now);
     }

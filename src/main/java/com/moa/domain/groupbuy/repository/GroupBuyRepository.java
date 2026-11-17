@@ -59,4 +59,27 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     int decreaseQuantity(@Param("id") Long id,
                          @Param("quantity") int quantity,
                          @Param("now") LocalDateTime now);
+
+    // 마감 스케줄러: 마감 시각이 지났는데 아직 판정 안 된(OPEN·CLOSED) 공동구매 id
+    // 엔티티 대신 id만 가져와서 건별로 따로 처리 (한 건 실패가 나머지에 영향 없게)
+    @Query(value = """
+            SELECT id FROM group_buys
+            WHERE status IN ('OPEN', 'CLOSED')
+              AND end_at <= :now
+            """, nativeQuery = true)
+    List<Long> findIdsToFinish(@Param("now") LocalDateTime now);
+
+    // 마감 판정: 목표 수량 이상이면 SUCCEEDED, 미달이면 FAILED
+    // 이미 판정된 건은 조건에서 빠져 영향 행 0 -> 호출한 쪽에서 건너뜀 (스케줄러 중복 실행 방어)
+    // 주문·취소 쿼리에 end_at > :now 조건이 있어서 마감 후엔 수량이 바뀌지 않음 -> 별도 락 불필요
+    @Modifying
+    @Query(value = """
+            UPDATE group_buys
+            SET status = CASE WHEN current_quantity >= target_quantity
+                              THEN 'SUCCEEDED' ELSE 'FAILED' END
+            WHERE id = :id
+              AND status IN ('OPEN', 'CLOSED')
+              AND end_at <= :now
+            """, nativeQuery = true)
+    int finish(@Param("id") Long id, @Param("now") LocalDateTime now);
 }
