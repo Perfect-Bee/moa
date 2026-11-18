@@ -20,8 +20,10 @@ button.small { padding: 4px 8px; font-size: 12px; }
 button.secondary { background: #6b7280; }
 
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th, td { padding: 6px; border-bottom: 1px solid #e5e7eb; text-align: left; }
-td.actions { display: flex; gap: 4px; align-items: center; }
+th, td { padding: 6px; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: middle; }
+td.actions { white-space: nowrap; }
+td.actions > * { margin-right: 4px; vertical-align: middle; }
+.thumb { width: 40px; height: 40px; object-fit: contain; vertical-align: middle; }
 .hint { color: #6b7280; font-size: 12px; }
 .pager { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 pre { white-space: pre-wrap; }

@@ -60,11 +60,14 @@
                 <input name="name" placeholder="상품명" required>
                 <input name="description" placeholder="설명">
                 <input name="listPrice" type="number" min="1" placeholder="정가" required>
-                <input name="imageUrl" placeholder="이미지 URL (선택)">
+                <select name="imageUrl">
+                    <option value="">이미지 없음</option>
+                    <option value="/images/products/laptop.jpg">노트북</option>
+                    <option value="/images/products/phone.png">핸드폰</option>
+                    <option value="/images/products/tv.webp">TV</option>
+                </select>
                 <button type="submit">등록</button>
             </form>
-        </div>
-        <div class="card">
             <h2>공동구매 개설 (판매자)</h2>
             <form id="groupbuy-form">
                 <input name="productId" type="number" min="1" placeholder="상품 ID" required>
