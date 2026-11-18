@@ -3,6 +3,8 @@
 > 한 상품을 여러 사람이 함께 대량 구매해 **도매가로 싸게 사는** 공동구매 서비스의 백엔드입니다.
 > 여러 명이 동시에 결제해도 **정해진 수량을 넘겨 팔지 않도록** 동시성을 제어하고, 참여 현황을 **실시간(SSE)** 으로 보여줍니다.
 
+<img width="1920" height="1080" alt="메인 로고 (라이트)@2x" src="https://github.com/user-attachments/assets/b22b0e6b-c988-477b-8d14-caaf59aadeac" />
+
 https://youtu.be/tFwbJnYFTXQ
 
 
@@ -54,8 +56,6 @@ https://youtu.be/tFwbJnYFTXQ
 
 ### 공동구매 상태 변화
 
-<img width="626" height="111" alt="스크린샷 2026-11-18 111604" src="https://github.com/user-attachments/assets/8fa98a5d-0123-43dd-8e05-77fad96190e6" />
-<img width="626" height="111" alt="스크린샷 2026-11-18 111604" src="https://github.com/user-attachments/assets/eee6f9b5-1cc0-45d8-b3ab-011251a4363d" />
 <img width="798" height="920" alt="image" src="https://github.com/user-attachments/assets/936d1e40-d225-408f-94de-4bfb5d1477b0" />
 
 
@@ -273,7 +273,8 @@ k6 run -e USERS=100 -e MAX=10 k6/cart-order-race.js
 | 최종 공동구매 상태 | 10 / 10, `CLOSED` | ✅ `current=10 max=10 status=CLOSED` |
 
 <!-- 이미지: 수정 후 k6 결과 화면 -->
-![k6 결과 (수정 후)]()
+#### k6 결과 (수정 후)
+<img width="626" height="111" alt="스크린샷 2026-11-18 111604" src="https://github.com/user-attachments/assets/6c7e0718-bd39-4c7f-815d-4f36cbb0ec9e" />
 
 
 
@@ -283,16 +284,60 @@ k6 run -e USERS=100 -e MAX=10 k6/cart-order-race.js
 
 처음 실행했을 때 초과 판매는 없었지만(성공 10건), **83건이 약 30초 뒤 500 오류**로 실패했습니다.
 
-<!-- 이미지: 수정 전 k6 결과 화면 -->
-![k6 결과 (수정 전)]()
+
+#### k6 결과 (수정 전)
 
 ```
-HikariPool-1 - Connection is not available, request timed out after 30000ms
-(total=10, active=10, idle=0, waiting=95)
+INFO[0055] groupBuyId=2 current=10 max=10 status=CLOSED  source=console
+
+  █ THRESHOLDS 
+
+    order_other
+    ✗ 'count==0' count=83
+
+    order_success
+    ✓ 'count==10' count=10
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 103    1.858765/s
+    checks_succeeded...: 19.41% 20 out of 103
+    checks_failed......: 80.58% 83 out of 103
+
+    ✗ 201 또는 409
+      ↳  17% — ✓ 17 / ✗ 83
+    ✓ 최대 수량 초과 없음
+    ✓ 최대 수량까지 정확히 판매
+    ✓ CLOSED 전환
+
+    CUSTOM
+    order_conflict.................: 7      0.126324/s
+    order_other....................: 83     1.49784/s
+    order_success..................: 10     0.180463/s
+
+    HTTP
+    http_req_duration..............: avg=7.61s  min=4.5ms  med=117.33ms max=30.85s p(90)=30.66s   p(95)=30.75s  
+      { expected_response:true }...: avg=1.04s  min=4.5ms  med=116.27ms max=30.36s p(90)=119.78ms p(95)=121.33ms
+    http_req_failed................: 22.22% 90 out of 405
+    http_reqs......................: 405    7.308735/s
+
+    EXECUTION
+    iteration_duration.............: avg=30.61s min=30.31s med=30.62s   max=30.85s p(90)=30.79s   p(95)=30.82s  
+    iterations.....................: 100    1.804626/s
+    vus............................: 80     min=0         max=100
+    vus_max........................: 100    min=100       max=100
+
+    NETWORK
+    data_received..................: 197 kB 3.6 kB/s
+    data_sent......................: 119 kB 2.1 kB/s
+
+running (0m55.4s), 000/100 VUs, 100 complete and 0 interrupted iterations
+pay_at_once ✓ [======================================] 100 VUs  30s  100/100 iters, 1 per VU
+ERRO[0055] thresholds on metrics 'order_other' have been crossed
 ```
 
-<!-- 이미지: 서버 로그 캡처 -->
-![HikariPool 로그]()
+<img width="811" height="266" alt="스크린샷 2026-11-18 111850" src="https://github.com/user-attachments/assets/a71cb203-510d-4cd3-8dc1-95ba7af865c7" />
+
 
 **원인**
 
@@ -388,9 +433,3 @@ k6 run -e USERS=100 -e MAX=10 k6/cart-order-race.js   # 100명이 10개를 동�
 
 ---
 
-## 관련 문서
-
-<!-- 링크: 노션 프로젝트 페이지, API 명세, 트러블슈팅 기록 등 -->
-- 프로젝트 노션: []()
-- API 명세: []()
-- k6 테스트 기록: []()
