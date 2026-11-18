@@ -155,7 +155,7 @@ public class OrderService {
         payment.refund(now);
         paymentClient.cancel(payment.getPaymentKey());
 
-        // 6. 커밋 후 Redis 반납 (먼저 반납 후 롤백되면 초과 판매 가능)
+        // 6. 커밋 후 Redis 반납
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
