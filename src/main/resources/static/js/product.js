@@ -46,7 +46,7 @@ async function loadProducts() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.productId}</td>
-            <td>${esc(p.name)}</td>
+            <td>${p.imageUrl ? `<img src="${esc(p.imageUrl)}" class="thumb" alt="">` : ''} ${esc(p.name)}</td>
             <td>${won(p.listPrice)}</td>
             <td>${g ? `#${g.groupBuyId} · ${won(g.wholesalePrice)} · ${g.currentQuantity}/${g.targetQuantity}개 · ~${fmtTime(g.endAt)}` : '-'}</td>
             <td class="actions"></td>`;

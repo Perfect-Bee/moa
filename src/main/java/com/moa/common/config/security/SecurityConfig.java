@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         // 테스트 화면 (static 정적 파일)
                         .requestMatchers(HttpMethod.GET,
-                                "/", "/index.html", "/css/**", "/js/**"
+                                "/", "/index.html", "/css/**", "/js/**", "/images/**"
                         ).permitAll()
                         // 인증
                         .requestMatchers(
