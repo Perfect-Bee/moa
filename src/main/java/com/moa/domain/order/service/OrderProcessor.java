@@ -17,6 +17,7 @@ import com.moa.domain.user.entity.User;
 import com.moa.domain.user.exception.UserErrorCode;
 import com.moa.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 // OrderService와 다른 빈으로 분리한 이유: 같은 클래스 안에서 this.process()로 부르면
 // 프록시를 거치지 않아 @Transactional이 적용되지 않음 (self-invocation)
 // → 묶음 주문에서 항목마다 트랜잭션이 따로여야 한 항목이 실패해도 나머지가 유지됨
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrderProcessor {
@@ -70,9 +72,22 @@ public class OrderProcessor {
             @Override
             public void afterCompletion(int status) {
                 if (status != STATUS_COMMITTED) {
-                    groupBuyQuantityService.release(groupBuyId, quantity);
+                    // 결제 취소 먼저 (돈이 걸린 쪽 우선)
                     if (paymentKey.get() != null) {
-                        paymentClient.cancel(paymentKey.get());
+                        try {
+                            paymentClient.cancel(paymentKey.get());
+                        } catch (RuntimeException e) {
+                            log.error("보상 처리 - 결제 취소 실패 groupBuyId={}, paymentKey={}",
+                                    groupBuyId, paymentKey.get(), e);
+                        }
+                    }
+
+                    // Redis 반납 (결제 취소 성공 여부와 상관없이 항상 실행)
+                    try {
+                        groupBuyQuantityService.release(groupBuyId, quantity);
+                    } catch (RuntimeException e) {
+                        log.error("보상 처리 - Redis 반납 실패 groupBuyId={}, quantity={}",
+                                groupBuyId, quantity, e);
                     }
                 }
             }
